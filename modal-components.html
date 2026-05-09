@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>添加编辑窗口组件展示</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #fff;
+      --line: #d9e2ef;
+      --text: #1f2d3d;
+      --muted: #7a8699;
+      --primary: #1677ff;
+      --danger: #ff4d4f;
+      --placeholder: #b4bfcd;
+      --sidebar: #071f3f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      font-size: 13px;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 194px 1fr;
+      grid-template-rows: 52px 1fr;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 194px 1fr auto;
+      height: 52px;
+      background: #082c55;
+      color: #fff;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 18px;
+      font-size: 18px;
+      font-weight: 700;
+      background: #0a3768;
+    }
+
+    .brand-mark {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #ffbe45, #ff6f35);
+    }
+
+    .top-title {
+      display: flex;
+      align-items: center;
+      padding-left: 24px;
+      font-size: 14px;
+    }
+
+    .userbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-right: 18px;
+      font-size: 12px;
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #ff7a45;
+      display: grid;
+      place-items: center;
+      color: #fff;
+    }
+
+    .sidebar {
+      grid-row: 2;
+      background: var(--sidebar);
+      color: #d9e6f7;
+      padding-top: 18px;
+    }
+
+    .menu-item {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .menu-item.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .content {
+      grid-row: 2;
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .breadcrumb {
+      height: 34px;
+      display: flex;
+      align-items: center;
+      color: #607086;
+      margin-bottom: 10px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border-radius: 8px;
+      border: 1px solid #edf2f8;
+      padding: 20px;
+      min-height: calc(100vh - 114px);
+    }
+
+    .component-block {
+      border-bottom: 1px solid #edf2f8;
+      padding-bottom: 24px;
+      margin-bottom: 24px;
+    }
+
+    .component-block:last-child {
+      border-bottom: 0;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .block-title {
+      margin: 0 0 16px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #223042;
+    }
+
+    .demo-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .btn {
+      height: 32px;
+      border-radius: 4px;
+      border: 1px solid var(--primary);
+      background: var(--primary);
+      color: #fff;
+      padding: 0 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .btn.default {
+      border-color: var(--line);
+      background: #fff;
+      color: #344052;
+    }
+
+    .note {
+      color: #607086;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .dialog-mask,
+    .drawer-mask {
+      position: fixed;
+      inset: 0;
+      display: none;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 50;
+    }
+
+    .dialog-mask.open,
+    .drawer-mask.open {
+      display: block;
+    }
+
+    .modal-window {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      max-width: calc(100vw - 48px);
+      max-height: calc(100vh - 48px);
+      background: #fff;
+      border-radius: 3px;
+      display: grid;
+      grid-template-rows: 56px minmax(0, 1fr) 64px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+    }
+
+    .drawer-window {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 780px;
+      max-width: calc(100vw - 48px);
+      height: 100%;
+      background: #fff;
+      display: grid;
+      grid-template-rows: 64px minmax(0, 1fr) 64px;
+      box-shadow: -8px 0 24px rgba(0, 0, 0, 0.16);
+    }
+
+    .window-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      font-size: 16px;
+      color: #223042;
+    }
+
+    .window-close {
+      border: 0;
+      background: transparent;
+      color: #8da0ba;
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .window-body {
+      overflow: auto;
+      padding: 12px 28px 24px;
+    }
+
+    .window-foot {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px;
+      border-top: 1px solid #f0f3f8;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 118px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+    }
+
+    .form-row.compact {
+      align-items: start;
+    }
+
+    .label {
+      min-height: 32px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      color: #344052;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .label.required::before {
+      content: "*";
+      color: var(--danger);
+      margin-right: 4px;
+      font-weight: 400;
+    }
+
+    .field-box {
+      position: relative;
+      min-width: 0;
+    }
+
+    .field,
+    .textarea,
+    .select-control,
+    .range-input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      color: #223042;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .field,
+    .select-control,
+    .range-input {
+      height: 32px;
+    }
+
+    .field {
+      padding: 0 12px;
+    }
+
+    .textarea {
+      min-height: 88px;
+      padding: 8px 12px 22px;
+      line-height: 1.45;
+      resize: vertical;
+    }
+
+    .textarea.no-resize {
+      height: 70px;
+      resize: none;
+    }
+
+    .field::placeholder,
+    .textarea::placeholder {
+      color: var(--placeholder);
+    }
+
+    .field:focus,
+    .textarea:focus,
+    .select-control.is-open,
+    .range-input:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.10);
+    }
+
+    .field:disabled,
+    .textarea:disabled,
+    .range-input input:disabled,
+    .range-input select:disabled,
+    .select-control.is-disabled,
+    .radio input:disabled + span {
+      color: #9aa8bc;
+      background: #f3f6fa;
+      cursor: not-allowed;
+    }
+
+    .field:disabled,
+    .textarea:disabled,
+    .select-control.is-disabled,
+    .range-input.is-disabled {
+      border-color: #d9e2ef;
+      box-shadow: none;
+    }
+
+    .field:disabled,
+    .textarea:disabled,
+    .select-control.is-disabled,
+    .range-input.is-disabled,
+    .range-input.is-disabled *,
+    .radio.disabled,
+    .radio.disabled * {
+      cursor: not-allowed;
+    }
+
+    .select-control.is-disabled .select-trigger {
+      color: #9aa8bc;
+      cursor: not-allowed;
+    }
+
+    .select-control {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .select-trigger {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px 0 12px;
+      color: #223042;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .select-text.placeholder {
+      color: var(--placeholder);
+    }
+
+    .select-arrow {
+      color: #9badc4;
+      font-size: 12px;
+    }
+
+    .select-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      display: none;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      box-shadow: 0 10px 22px rgba(15, 34, 61, 0.14);
+      z-index: 70;
+      padding: 4px 0;
+    }
+
+    .select-control.is-open .select-menu {
+      display: block;
+    }
+
+    .select-option {
+      height: 32px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      cursor: pointer;
+    }
+
+    .select-option:hover,
+    .select-option.selected {
+      background: #f0f7ff;
+      color: var(--primary);
+    }
+
+    .radio-group {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      flex-wrap: wrap;
+    }
+
+    .radio {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #344052;
+      cursor: pointer;
+    }
+
+    .radio input {
+      margin: 0;
+      accent-color: var(--primary);
+    }
+
+    .range-input {
+      display: grid;
+      grid-template-columns: 80px 1fr 18px 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+    }
+
+    .range-input.single {
+      grid-template-columns: 80px 1fr;
+    }
+
+    .range-input select,
+    .range-input input {
+      min-width: 0;
+      width: 100%;
+      border: 0;
+      outline: none;
+      font: inherit;
+      color: #223042;
+      background: transparent;
+    }
+
+    .range-input select {
+      color: #344052;
+    }
+
+    .range-input .dash {
+      color: #344052;
+      text-align: center;
+    }
+
+    .count {
+      position: absolute;
+      right: 10px;
+      bottom: 7px;
+      color: #7a8699;
+      font-size: 12px;
+      pointer-events: none;
+    }
+
+    .field-box.invalid .field,
+    .field-box.invalid .textarea,
+    .field-box.invalid .select-control,
+    .field-box.invalid .range-input {
+      border-color: var(--danger);
+      box-shadow: none;
+    }
+
+    .error-text {
+      display: none;
+      color: var(--danger);
+      font-size: 12px;
+      line-height: 18px;
+      margin-top: 2px;
+    }
+
+    .field-box.invalid .error-text {
+      display: block;
+    }
+
+    .inline-tip {
+      color: #ff9f1a;
+      font-size: 12px;
+      line-height: 18px;
+      margin-top: 4px;
+    }
+
+    .success-tip {
+      position: fixed;
+      top: 72px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 36px;
+      display: none;
+      align-items: center;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 8px 22px rgba(15, 34, 61, 0.14);
+      z-index: 90;
+    }
+
+    .success-tip.show {
+      display: flex;
+    }
+
+    @media (max-width: 960px) {
+      .app { grid-template-columns: 1fr; grid-template-rows: 52px 1fr; }
+      .topbar { grid-template-columns: 1fr auto; }
+      .brand, .sidebar { display: none; }
+      .content { grid-column: 1; }
+      .modal-window, .drawer-window { width: calc(100vw - 24px); }
+      .form-row { grid-template-columns: 96px minmax(0, 1fr); }
+    }
+
+    body.embedded {
+      background: #fff;
+    }
+
+    body.embedded .app {
+      display: block;
+      min-height: auto;
+    }
+
+    body.embedded .topbar,
+    body.embedded .sidebar,
+    body.embedded .breadcrumb {
+      display: none;
+    }
+
+    body.embedded .content {
+      padding: 0;
+      overflow: visible;
+    }
+
+    body.embedded .panel {
+      min-height: auto;
+      border: 0;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <span>发行运营后台</span>
+      </div>
+      <div class="top-title">添加编辑窗口组件展示</div>
+      <div class="userbox">
+        <div class="avatar">申</div>
+        <span>申庆</span>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <div class="menu-item">筛选项组件</div>
+      <div class="menu-item">列表内容组件</div>
+      <div class="menu-item active">添加编辑窗口</div>
+    </aside>
+
+    <main class="content">
+      <div class="breadcrumb">首页 / 原型组件 / 添加编辑窗口</div>
+      <section class="panel">
+        <div class="component-block">
+          <h2 class="block-title">窗口样式（添加）</h2>
+          <div class="demo-actions">
+            <button class="btn" type="button" data-open="centerModal">打开居中弹窗</button>
+            <button class="btn" type="button" data-open="rightDrawer">打开右侧抽屉</button>
+          </div>
+          <p class="note">添加/编辑窗口主要有居中弹窗和右侧抽屉两类。二者只是承载方式不同，均包含标题、关闭按钮、取消按钮、确认按钮和窗口配置内容。</p>
+        </div>
+
+        <div class="component-block">
+          <h2 class="block-title">窗口样式（编辑）</h2>
+          <div class="demo-actions">
+            <button class="btn" type="button" data-open="editModal">打开编辑弹窗</button>
+          </div>
+          <p class="note">编辑窗口中经常会对部分参数限制修改。不可编辑项置灰，鼠标移入显示禁止操作光标；单选下拉框、输入框、范围输入组件和单选项都可以进入禁用态。</p>
+        </div>
+
+        <div class="component-block">
+          <h2 class="block-title">窗口配置内容规则</h2>
+          <p class="note">必填项在标题前显示红色星号；提交时若必填项为空，控件边框变红并在控件下方显示红色提示。输入框支持不可拉动和可拉动两类；带字数限制的输入框在右下角展示字数统计。单选项必须有默认值。</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="dialog-mask" id="centerModal">
+    <div class="modal-window" role="dialog" aria-label="添加封禁">
+      <div class="window-head">
+        <span>添加封禁</span>
+        <button class="window-close" type="button" data-close>×</button>
+      </div>
+      <div class="window-body">
+        <form class="form-grid" data-form="center">
+          <div class="form-row compact">
+            <label class="label required">选择游戏</label>
+            <div class="field-box" data-required data-message="请选择游戏">
+              <div class="select-control" data-select>
+                <button class="select-trigger" type="button"><span class="select-text placeholder">请选择游戏</span><span class="select-arrow">⌄</span></button>
+                <div class="select-menu">
+                  <div class="select-option" data-value="青木">青木</div>
+                  <div class="select-option" data-value="守卫山海">守卫山海</div>
+                  <div class="select-option" data-value="代号F">代号F</div>
+                </div>
+              </div>
+              <div class="error-text">请选择游戏</div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">操作类型</label>
+            <div class="field-box" data-required data-message="请选择操作类型">
+              <div class="select-control" data-select>
+                <button class="select-trigger" type="button"><span class="select-text placeholder">请选择操作类型</span><span class="select-arrow">⌄</span></button>
+                <div class="select-menu">
+                  <div class="select-option" data-value="封禁">封禁</div>
+                  <div class="select-option" data-value="解封">解封</div>
+                </div>
+              </div>
+              <div class="error-text">请选择操作类型</div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">操作对象</label>
+            <div class="field-box">
+              <div class="radio-group">
+                <label class="radio"><input type="radio" name="targetType" checked /> 按平台游戏账号ID封禁</label>
+                <label class="radio"><input type="radio" name="targetType" /> 按角色ID封禁</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="label"></label>
+            <div class="field-box" data-required data-message="请输入操作对象ID">
+              <textarea class="textarea" maxlength="1000" placeholder="请根据上方选择的添加类型，填入对应的ID。支持批量添加，一行填一个ID。"></textarea>
+              <div class="error-text">请输入操作对象ID</div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">封禁时长</label>
+            <div class="field-box" data-required data-message="请选择封禁时长">
+              <div class="select-control" data-select>
+                <button class="select-trigger" type="button"><span class="select-text placeholder">请选择</span><span class="select-arrow">⌄</span></button>
+                <div class="select-menu">
+                  <div class="select-option" data-value="1小时">1小时</div>
+                  <div class="select-option" data-value="1天">1天</div>
+                  <div class="select-option" data-value="永久">永久</div>
+                </div>
+              </div>
+              <div class="error-text">请选择封禁时长</div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">游戏清屏</label>
+            <div class="field-box">
+              <div class="radio-group">
+                <label class="radio"><input type="radio" name="clearScreen" /> 清屏</label>
+                <label class="radio"><input type="radio" name="clearScreen" checked /> 不清屏</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="label">操作原因</label>
+            <div class="field-box">
+              <textarea class="textarea no-resize" maxlength="200" data-count="reasonCount" placeholder="请填写操作原因"></textarea>
+              <span class="count" id="reasonCount">0/200</span>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="window-foot">
+        <button class="btn default" type="button" data-close>取消</button>
+        <button class="btn" type="button" data-submit="center">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="drawer-mask" id="rightDrawer">
+    <div class="drawer-window" role="dialog" aria-label="新增iOS APP更新规则">
+      <div class="window-head">
+        <span>新增iOS APP更新规则</span>
+        <button class="window-close" type="button" data-close>×</button>
+      </div>
+      <div class="window-body">
+        <form class="form-grid" data-form="drawer">
+          <div class="form-row compact">
+            <label class="label required">游戏</label>
+            <div class="field-box" data-required data-message="请选择游戏">
+              <div class="select-control" data-select>
+                <button class="select-trigger" type="button"><span class="select-text placeholder">请选择游戏</span><span class="select-arrow">⌄</span></button>
+                <div class="select-menu">
+                  <div class="select-option" data-value="青木">青木</div>
+                  <div class="select-option" data-value="守卫山海">守卫山海</div>
+                  <div class="select-option" data-value="代号F">代号F</div>
+                </div>
+              </div>
+              <div class="error-text">请选择游戏</div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">应用包名</label>
+            <div class="field-box" data-required data-message="请输入应用包名">
+              <input class="field" placeholder="请输入应用包名" />
+              <div class="error-text">请输入应用包名</div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">应用版本号更新范围</label>
+            <div class="field-box" data-required data-message="请输入版本号范围">
+              <div class="range-input">
+                <select><option>区间</option><option>大于</option><option>小于</option></select>
+                <input placeholder="最小应用版本号" />
+                <span class="dash">-</span>
+                <input placeholder="最大应用版本号" />
+              </div>
+              <div class="error-text">请输入版本号范围</div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label">更新类型</label>
+            <div class="field-box">
+              <div class="radio-group">
+                <label class="radio"><input type="radio" name="updateType" checked /> 提示更新</label>
+                <label class="radio"><input type="radio" name="updateType" /> 强制更新</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">更新文案标题</label>
+            <div class="field-box" data-required data-message="请输入更新文案标题">
+              <input class="field" maxlength="30" placeholder="请输入弹窗标题" />
+              <div class="error-text">请输入更新文案标题</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="label required">更新文案内容</label>
+            <div class="field-box" data-required data-message="请输入更新文案内容">
+              <textarea class="textarea no-resize" maxlength="200" data-count="copyCount" placeholder="请输入弹窗内容"></textarea>
+              <span class="count" id="copyCount">0/200</span>
+              <div class="error-text">请输入更新文案内容</div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">APP Store链接</label>
+            <div class="field-box" data-required data-message="请输入APPStore链接">
+              <input class="field" placeholder="请输入 App Store 链接" />
+              <div class="error-text">请输入APPStore链接</div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label">发布状态</label>
+            <div class="field-box">
+              <div class="radio-group">
+                <label class="radio"><input type="radio" name="publishStatus" checked /> 关闭</label>
+                <label class="radio"><input type="radio" name="publishStatus" /> 开启</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label">发布范围</label>
+            <div class="field-box">
+              <div class="radio-group">
+                <label class="radio"><input type="radio" name="publishRange" checked /> 灰度发布</label>
+                <label class="radio"><input type="radio" name="publishRange" /> 全量发布</label>
+              </div>
+              <div class="inline-tip">新创建的规则只能选择灰度发布，编辑时可切换为全量发布</div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">灰度范围</label>
+            <div class="field-box" data-required data-message="请输入灰度值">
+              <div class="range-input single">
+                <select><option>IP</option><option>账号ID</option><option>设备号</option></select>
+                <input placeholder="请输入，多个值用英文逗号隔开" />
+              </div>
+              <div class="error-text">请输入灰度值</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="label">备注</label>
+            <div class="field-box">
+              <textarea class="textarea no-resize" maxlength="200" data-count="remarkCount" placeholder="运营备注（选填）"></textarea>
+              <span class="count" id="remarkCount">0/200</span>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="window-foot">
+        <button class="btn default" type="button" data-close>取消</button>
+        <button class="btn" type="button" data-submit="drawer">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-mask" id="editModal">
+    <div class="modal-window" role="dialog" aria-label="编辑应用版本">
+      <div class="window-head">
+        <span>编辑应用版本</span>
+        <button class="window-close" type="button" data-close>×</button>
+      </div>
+      <div class="window-body">
+        <form class="form-grid" data-form="edit">
+          <div class="form-row compact">
+            <label class="label required">选择游戏</label>
+            <div class="field-box">
+              <div class="select-control is-disabled" data-select data-disabled data-initial="幻1鬼服迭代版">
+                <button class="select-trigger" type="button"><span class="select-text">幻1鬼服迭代版</span><span class="select-arrow">⌄</span></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">应用包名</label>
+            <div class="field-box">
+              <input class="field" value="com.hlgf.sf" disabled />
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">应用版本号</label>
+            <div class="field-box">
+              <input class="field" value="1.0.1.4" disabled />
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">应用版本号更新范围</label>
+            <div class="field-box">
+              <div class="range-input is-disabled">
+                <select disabled><option>区间</option></select>
+                <input value="1.0.1.4" disabled />
+                <span class="dash">-</span>
+                <input value="1.0.2.0" disabled />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">审核状态</label>
+            <div class="field-box">
+              <div class="radio-group">
+                <label class="radio disabled"><input type="radio" name="auditStatus" disabled /><span>开启</span></label>
+                <label class="radio disabled"><input type="radio" name="auditStatus" checked disabled /><span>关闭</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label">审核渠道</label>
+            <div class="field-box">
+              <div class="select-control" data-select data-initial="500000-幻1迭代版H5测试">
+                <button class="select-trigger" type="button"><span class="select-text">500000-幻1迭代版H5测试</span><span class="select-arrow">⌄</span></button>
+                <div class="select-menu">
+                  <div class="select-option selected" data-value="500000-幻1迭代版H5测试">500000-幻1迭代版H5测试</div>
+                  <div class="select-option" data-value="520004-平台测试">520004-平台测试</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label">正式渠道</label>
+            <div class="field-box">
+              <div class="select-control" data-select data-initial="500000-幻1迭代版H5测试">
+                <button class="select-trigger" type="button"><span class="select-text">500000-幻1迭代版H5测试</span><span class="select-arrow">⌄</span></button>
+                <div class="select-menu">
+                  <div class="select-option selected" data-value="500000-幻1迭代版H5测试">500000-幻1迭代版H5测试</div>
+                  <div class="select-option" data-value="520004-平台测试">520004-平台测试</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label">H5链接</label>
+            <div class="field-box">
+              <input class="field" value="111111" />
+            </div>
+          </div>
+
+          <div class="form-row compact">
+            <label class="label required">是否转端</label>
+            <div class="field-box">
+              <div class="radio-group">
+                <label class="radio disabled"><input type="radio" name="convertStatus" disabled /><span>否</span></label>
+                <label class="radio disabled"><input type="radio" name="convertStatus" checked disabled /><span>是</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="label">备注</label>
+            <div class="field-box">
+              <textarea class="textarea no-resize" maxlength="200" data-count="editRemarkCount">222222</textarea>
+              <span class="count" id="editRemarkCount">0/200</span>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="window-foot">
+        <button class="btn default" type="button" data-close>取消</button>
+        <button class="btn" type="button" data-submit="edit">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="success-tip" id="successTip">提交成功</div>
+
+  <script>
+    if (new URLSearchParams(location.search).get("embed") === "1") {
+      document.body.classList.add("embedded");
+    }
+
+    const successTip = document.getElementById("successTip");
+    let tipTimer = null;
+
+    function showTip(text) {
+      successTip.textContent = text;
+      successTip.classList.add("show");
+      clearTimeout(tipTimer);
+      tipTimer = setTimeout(() => successTip.classList.remove("show"), 1400);
+    }
+
+    function resetWindow(mask) {
+      mask.querySelectorAll(".field-box.invalid").forEach((box) => box.classList.remove("invalid"));
+      mask.querySelectorAll("form").forEach((form) => form.reset());
+      mask.querySelectorAll("[data-count]").forEach((field) => {
+        field.dispatchEvent(new Event("input"));
+      });
+      mask.querySelectorAll("[data-select]").forEach((select) => {
+        select.classList.remove("is-open");
+        const text = select.querySelector(".select-text");
+        const selected = select.querySelector(".select-option.selected");
+        if (select.dataset.initial) {
+          select.dataset.value = select.dataset.initial;
+          text.textContent = select.dataset.initial;
+          text.classList.remove("placeholder");
+        } else {
+          delete select.dataset.value;
+          const placeholder = text.dataset.placeholder || text.textContent;
+          text.dataset.placeholder = placeholder;
+          text.textContent = placeholder;
+          text.classList.add("placeholder");
+          if (selected) selected.classList.remove("selected");
+        }
+      });
+    }
+
+    function closeAll() {
+      document.querySelectorAll(".dialog-mask.open, .drawer-mask.open").forEach((mask) => {
+        mask.classList.remove("open");
+        resetWindow(mask);
+      });
+      document.querySelectorAll(".select-control.is-open").forEach((select) => select.classList.remove("is-open"));
+    }
+
+    document.querySelectorAll("[data-open]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = document.getElementById(button.dataset.open);
+        resetWindow(target);
+        target.classList.add("open");
+      });
+    });
+
+    document.querySelectorAll("[data-close]").forEach((button) => {
+      button.addEventListener("click", closeAll);
+    });
+
+    document.querySelectorAll(".dialog-mask, .drawer-mask").forEach((mask) => {
+      mask.addEventListener("click", (event) => {
+        if (event.target === mask) closeAll();
+      });
+    });
+
+    document.querySelectorAll("[data-select]").forEach((select) => {
+      const trigger = select.querySelector(".select-trigger");
+      const text = select.querySelector(".select-text");
+      if (text.classList.contains("placeholder")) {
+        text.dataset.placeholder = text.textContent;
+      }
+      trigger.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (select.dataset.disabled !== undefined) return;
+        document.querySelectorAll(".select-control.is-open").forEach((item) => {
+          if (item !== select) item.classList.remove("is-open");
+        });
+        select.classList.toggle("is-open");
+      });
+      select.querySelectorAll(".select-option").forEach((option) => {
+        option.addEventListener("click", (event) => {
+          event.stopPropagation();
+          select.querySelectorAll(".select-option").forEach((item) => item.classList.remove("selected"));
+          option.classList.add("selected");
+          select.dataset.value = option.dataset.value;
+          text.textContent = option.dataset.value;
+          text.classList.remove("placeholder");
+          select.classList.remove("is-open");
+          select.closest(".field-box")?.classList.remove("invalid");
+        });
+      });
+    });
+
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".select-control.is-open").forEach((select) => select.classList.remove("is-open"));
+    });
+
+    document.querySelectorAll("[data-count]").forEach((field) => {
+      const counter = document.getElementById(field.dataset.count);
+      const max = Number(field.getAttribute("maxlength")) || 0;
+      const update = () => {
+        counter.textContent = `${field.value.length}/${max}`;
+      };
+      field.addEventListener("input", update);
+      update();
+    });
+
+    function fieldHasValue(box) {
+      const select = box.querySelector("[data-select]");
+      if (select) return Boolean(select.dataset.value);
+      const range = box.querySelector(".range-input");
+      if (range) {
+        const inputs = Array.from(range.querySelectorAll("input:not(:disabled)"));
+        return inputs.every((input) => input.value.trim());
+      }
+      const input = box.querySelector("input, textarea");
+      if (input) return Boolean(input.value.trim());
+      return true;
+    }
+
+    function validateForm(name) {
+      const form = document.querySelector(`[data-form="${name}"]`);
+      let valid = true;
+      form.querySelectorAll("[data-required]").forEach((box) => {
+        const ok = fieldHasValue(box);
+        box.classList.toggle("invalid", !ok);
+        if (!ok) valid = false;
+      });
+      return valid;
+    }
+
+    document.querySelectorAll("[data-submit]").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (validateForm(button.dataset.submit)) {
+          closeAll();
+          showTip("提交成功");
+        }
+      });
+    });
+
+    document.querySelectorAll("input, textarea").forEach((field) => {
+      field.addEventListener("input", () => {
+        field.closest(".field-box")?.classList.remove("invalid");
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeAll();
+    });
+  </script>
+</body>
+</html>

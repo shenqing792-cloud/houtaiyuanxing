@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>列表内容组件展示</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #fff;
+      --line: #d9e2ef;
+      --line-soft: #edf2f8;
+      --text: #1f2d3d;
+      --muted: #7a8699;
+      --primary: #1677ff;
+      --primary-weak: #eef5ff;
+      --danger: #ff4d4f;
+      --warning: #faad14;
+      --success: #52c41a;
+      --sidebar: #071f3f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      font-size: 13px;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 194px 1fr;
+      grid-template-rows: 52px 1fr;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 194px 1fr auto;
+      height: 52px;
+      background: #082c55;
+      color: #fff;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 18px;
+      font-size: 18px;
+      font-weight: 700;
+      background: #0a3768;
+    }
+
+    .brand-mark {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #ffbe45, #ff6f35);
+    }
+
+    .top-title {
+      display: flex;
+      align-items: center;
+      padding-left: 24px;
+      font-size: 14px;
+    }
+
+    .userbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-right: 18px;
+      font-size: 12px;
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #ff7a45;
+      display: grid;
+      place-items: center;
+      color: #fff;
+    }
+
+    .sidebar {
+      grid-row: 2;
+      background: var(--sidebar);
+      color: #d9e6f7;
+      padding-top: 18px;
+    }
+
+    .menu-item {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .menu-item.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .content {
+      grid-row: 2;
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .breadcrumb {
+      height: 34px;
+      display: flex;
+      align-items: center;
+      color: #607086;
+      margin-bottom: 10px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid #edf2f8;
+      border-radius: 8px;
+      padding: 20px;
+      min-height: calc(100vh - 114px);
+    }
+
+    .component-block {
+      border-bottom: 1px solid var(--line-soft);
+      padding-bottom: 24px;
+      margin-bottom: 24px;
+    }
+
+    .component-block:last-child {
+      border-bottom: 0;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .block-title {
+      margin: 0 0 14px;
+      font-size: 15px;
+      color: #223042;
+    }
+
+    .note {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-top: 1px solid var(--line);
+      border-left: 1px solid var(--line);
+    }
+
+    table {
+      width: 100%;
+      min-width: 1120px;
+      border-collapse: separate;
+      border-spacing: 0;
+      table-layout: fixed;
+      background: #fff;
+    }
+
+    th,
+    td {
+      height: 48px;
+      padding: 10px 12px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      text-align: center;
+      vertical-align: middle;
+      font-size: 12px;
+    }
+
+    th {
+      height: 40px;
+      background: #f3f7fc;
+      color: #344052;
+      font-weight: 600;
+    }
+
+    .ellipsis {
+      display: inline-block;
+      max-width: 130px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    .status-stack {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .status-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .state-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 52px;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 4px;
+      border: 1px solid #91caff;
+      background: #e6f4ff;
+      color: var(--primary);
+      font-size: 12px;
+    }
+
+    .state-badge.success {
+      border-color: #b7eb8f;
+      background: #f6ffed;
+      color: #389e0d;
+    }
+
+    .link-text,
+    .edit-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 0;
+      background: transparent;
+      color: var(--primary);
+      padding: 0;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid currentColor;
+      font-size: 10px;
+      line-height: 1;
+    }
+
+    .ep-icon {
+      width: 1em;
+      height: 1em;
+      display: inline-block;
+      vertical-align: -0.15em;
+      fill: currentColor;
+      overflow: hidden;
+      flex: none;
+    }
+
+    .switch {
+      position: relative;
+      width: 42px;
+      height: 22px;
+      border: 0;
+      border-radius: 999px;
+      background: #bfbfbf;
+      color: #fff;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .switch::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      transition: left 0.15s ease;
+    }
+
+    .switch.on {
+      background: var(--primary);
+    }
+
+    .switch.on::after {
+      left: 23px;
+    }
+
+    .switch span {
+      position: relative;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      padding-left: 14px;
+      padding-right: 0;
+      text-align: right;
+    }
+
+    .switch.on span {
+      padding: 0 12px 0 0;
+      text-align: left;
+    }
+
+    .btn {
+      height: 30px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 0 12px;
+      color: #fff;
+      background: var(--primary);
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    .btn.warning {
+      background: var(--warning);
+      border-color: var(--warning);
+    }
+
+    .btn.danger {
+      background: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .btn:disabled,
+    .btn.disabled {
+      background: #b9dcff;
+      border-color: #b9dcff;
+      color: #fff;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn.icon-only {
+      width: 44px;
+      padding: 0;
+    }
+
+    .btn .ep-icon {
+      width: 14px;
+      height: 14px;
+    }
+
+    .action-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+    }
+
+    .more {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .more-trigger {
+      border: 0;
+      background: transparent;
+      color: var(--primary);
+      font: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 30px;
+      padding: 0 4px;
+    }
+
+    .more-menu {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 4px);
+      width: 96px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      box-shadow: 0 10px 22px rgba(15, 34, 61, 0.14);
+      display: none;
+      z-index: 10;
+      padding: 4px 0;
+    }
+
+    .more-menu.open {
+      display: block;
+    }
+
+    .more-menu button {
+      width: 100%;
+      height: 30px;
+      border: 0;
+      background: #fff;
+      text-align: left;
+      padding: 0 12px;
+      color: #344052;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .more-menu button:hover {
+      background: #f5f8ff;
+      color: var(--primary);
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .demo-card {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .demo-card h3 {
+      margin: 0 0 12px;
+      font-size: 13px;
+      color: #344052;
+    }
+
+    .batch-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .selected-count {
+      color: #344052;
+      white-space: nowrap;
+    }
+
+    .selected-count strong {
+      color: var(--primary);
+      font-weight: 600;
+      padding: 0 3px;
+    }
+
+    .check-cell {
+      width: 44px;
+      text-align: center;
+    }
+
+    input[type="checkbox"].table-check {
+      width: 14px;
+      height: 14px;
+      margin: 0;
+      vertical-align: middle;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    tr.row-selected td {
+      background: #e6f4ff;
+    }
+
+    .batch-form {
+      display: grid;
+      gap: 14px;
+      padding: 4px 0;
+      width: 100%;
+    }
+
+    .batch-form-row {
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .batch-form-row label {
+      text-align: right;
+      font-weight: 600;
+      color: #344052;
+    }
+
+    .batch-input {
+      height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 0 10px;
+      color: #344052;
+      font: inherit;
+      outline: none;
+      background: #fff;
+    }
+
+    .pagination-demo {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      min-height: 32px;
+      color: #344052;
+    }
+
+    .page-size {
+      width: 96px;
+      height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      color: #344052;
+      padding: 0 10px;
+      font: inherit;
+      outline: none;
+    }
+
+    .page-btn,
+    .page-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 2px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #344052;
+      font: inherit;
+      cursor: pointer;
+      display: inline-grid;
+      place-items: center;
+    }
+
+    .page-btn {
+      background: #aab4c2;
+      border-color: #aab4c2;
+      color: #fff;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .page-num.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .modal-mask {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.18);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-mask.open {
+      display: flex;
+    }
+
+    .modal {
+      width: 418px;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+    }
+
+    .modal-head {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .modal-close {
+      border: 0;
+      background: transparent;
+      color: #9aa8bc;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 18px 18px 12px;
+      color: #344052;
+    }
+
+    .warn-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #faad14;
+      color: #fff;
+      display: inline-grid;
+      place-items: center;
+      flex: none;
+      font-weight: 700;
+    }
+
+    .modal-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 10px 16px 16px;
+    }
+
+    .modal-foot button {
+      height: 32px;
+      border-radius: 4px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #344052;
+      cursor: pointer;
+    }
+
+    .modal-foot .primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .toast {
+      position: fixed;
+      top: 72px;
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: 220px;
+      height: 36px;
+      padding: 0 16px;
+      border-radius: 4px;
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 22px rgba(15, 34, 61, 0.14);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 120;
+      color: #344052;
+    }
+
+    .toast.show {
+      display: flex;
+    }
+
+    @media (max-width: 960px) {
+      .app { grid-template-columns: 1fr; grid-template-rows: 52px 1fr; }
+      .topbar { grid-template-columns: 1fr auto; }
+      .brand, .sidebar { display: none; }
+      .content { grid-column: 1; }
+      .demo-grid { grid-template-columns: 1fr; }
+    }
+
+    body.embedded {
+      background: #fff;
+    }
+
+    body.embedded .app {
+      display: block;
+      min-height: auto;
+    }
+
+    body.embedded .topbar,
+    body.embedded .sidebar,
+    body.embedded .breadcrumb {
+      display: none;
+    }
+
+    body.embedded .content {
+      padding: 0;
+      overflow: visible;
+    }
+
+    body.embedded .panel {
+      min-height: auto;
+      border: 0;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <span>发行运营后台</span>
+      </div>
+      <div class="top-title">列表内容组件展示</div>
+      <div class="userbox">
+        <div class="avatar">申</div>
+        <span>申庆</span>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <div class="menu-item">运营管理</div>
+      <div class="menu-item">转端管理</div>
+      <div class="menu-item active">组件沉淀</div>
+      <div class="menu-item">系统设置</div>
+    </aside>
+
+    <main class="content">
+      <div class="breadcrumb">首页 / 原型组件 / 列表内容组件</div>
+      <section class="panel">
+        <div class="component-block">
+          <h2 class="block-title">列表内容总览</h2>
+          <div class="table-wrap">
+            <table>
+              <colgroup>
+                <col style="width:120px" />
+                <col style="width:90px" />
+                <col style="width:140px" />
+                <col style="width:160px" />
+                <col style="width:170px" />
+                <col style="width:190px" />
+                <col style="width:120px" />
+                <col style="width:120px" />
+                <col style="width:120px" />
+                <col style="width:120px" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>所属游戏</th>
+                  <th>ID</th>
+                  <th>渠道名称</th>
+                  <th>平台游戏账号ID</th>
+                  <th>自动登录倒计时长</th>
+                  <th>普通账号入口设置</th>
+                  <th>闪验一键登录</th>
+                  <th>登录</th>
+                  <th>支付</th>
+                  <th>注册</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>守卫山海</td>
+                  <td>1</td>
+                  <td>测试服</td>
+                  <td><button class="link-text" data-toast="打开平台游戏账号ID详情">38564674980597 <svg class="ep-icon" viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 64a448 448 0 1 1 0 896 448 448 0 0 1 0-896zm0 64a384 384 0 1 0 0 768 384 384 0 0 0 0-768zm32 192a32 32 0 1 1-64 0 32 32 0 0 1 64 0zm-32 96a32 32 0 0 1 32 32v224a32 32 0 0 1-64 0V448a32 32 0 0 1 32-32z"></path></svg></button></td>
+                  <td><button class="edit-text" data-toast="编辑自动登录倒计时长">2秒 <svg class="ep-icon" viewBox="0 0 1024 1024" aria-hidden="true"><path d="M832 512a32 32 0 1 1 64 0v352a32 32 0 0 1-32 32H160a32 32 0 0 1-32-32V160a32 32 0 0 1 32-32h352a32 32 0 0 1 0 64H192v640h640V512z"></path><path d="m469.952 554.24 52.8-7.552L847.104 222.4a32 32 0 1 0-45.248-45.248L477.44 501.44l-7.488 52.8zm422.4-422.4a96 96 0 0 1 0 135.808l-331.84 331.84a32 32 0 0 1-18.112 9.088L436.8 623.68a32 32 0 0 1-36.224-36.224l15.104-105.6a32 32 0 0 1 9.024-18.112l331.904-331.84a96 96 0 0 1 135.744 0z"></path></svg></button></td>
+                  <td>
+                    <div class="status-stack">
+                      <span class="status-line">普通账号登录入口：<span class="state-badge">已开启</span></span>
+                      <span class="status-line">普通账号注册入口：<span class="state-badge">已开启</span></span>
+                      <span class="status-line">模式：<span class="state-badge">优先登录</span></span>
+                    </div>
+                  </td>
+                  <td><button class="switch on" data-switch data-message="此操作将关闭闪验一键登录，是否继续？"><span>开</span></button></td>
+                  <td><button class="switch on" data-switch data-message="此操作将关闭登录，是否继续？"><span>开</span></button></td>
+                  <td><button class="switch on" data-switch data-message="此操作将关闭支付，是否继续？"><span>开</span></button></td>
+                  <td><button class="switch on" data-switch data-message="此操作将关闭注册，是否继续？"><span>开</span></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="note">这一行集中展示：文本、可点击样式、状态图标、开关、直接编辑样式。</p>
+        </div>
+
+        <div class="component-block">
+          <h2 class="block-title">操作项</h2>
+          <div class="demo-grid">
+            <div class="demo-card">
+              <h3>简单操作：纯图标</h3>
+              <div class="table-wrap">
+                <table style="min-width: 460px">
+                  <thead>
+                    <tr><th>最后编辑时间</th><th>操作</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>2025-02-08 18:13:20</td><td><span class="action-row"><button class="btn icon-only" data-toast="编辑" aria-label="编辑"><svg class="ep-icon" viewBox="0 0 1024 1024"><path d="M832 512a32 32 0 1 1 64 0v352a32 32 0 0 1-32 32H160a32 32 0 0 1-32-32V160a32 32 0 0 1 32-32h352a32 32 0 0 1 0 64H192v640h640V512z"></path><path d="m469.952 554.24 52.8-7.552L847.104 222.4a32 32 0 1 0-45.248-45.248L477.44 501.44l-7.488 52.8zm422.4-422.4a96 96 0 0 1 0 135.808l-331.84 331.84a32 32 0 0 1-18.112 9.088L436.8 623.68a32 32 0 0 1-36.224-36.224l15.104-105.6a32 32 0 0 1 9.024-18.112l331.904-331.84a96 96 0 0 1 135.744 0z"></path></svg></button><button class="btn icon-only danger" data-toast="删除" aria-label="删除"><svg class="ep-icon" viewBox="0 0 1024 1024"><path d="M160 256H96a32 32 0 0 1 0-64h256V96a32 32 0 0 1 32-32h256a32 32 0 0 1 32 32v96h256a32 32 0 1 1 0 64h-64v672a32 32 0 0 1-32 32H192a32 32 0 0 1-32-32V256zm448-64v-64H416v64h192zM224 256v640h576V256H224zm192 128a32 32 0 0 1 32 32v320a32 32 0 0 1-64 0V416a32 32 0 0 1 32-32zm192 0a32 32 0 0 1 32 32v320a32 32 0 1 1-64 0V416a32 32 0 0 1 32-32z"></path></svg></button></span></td></tr>
+                    <tr><td>2024-12-24 16:33:38</td><td><span class="action-row"><button class="btn icon-only" data-toast="编辑" aria-label="编辑"><svg class="ep-icon" viewBox="0 0 1024 1024"><path d="M832 512a32 32 0 1 1 64 0v352a32 32 0 0 1-32 32H160a32 32 0 0 1-32-32V160a32 32 0 0 1 32-32h352a32 32 0 0 1 0 64H192v640h640V512z"></path><path d="m469.952 554.24 52.8-7.552L847.104 222.4a32 32 0 1 0-45.248-45.248L477.44 501.44l-7.488 52.8zm422.4-422.4a96 96 0 0 1 0 135.808l-331.84 331.84a32 32 0 0 1-18.112 9.088L436.8 623.68a32 32 0 0 1-36.224-36.224l15.104-105.6a32 32 0 0 1 9.024-18.112l331.904-331.84a96 96 0 0 1 135.744 0z"></path></svg></button><button class="btn icon-only danger" data-toast="删除" aria-label="删除"><svg class="ep-icon" viewBox="0 0 1024 1024"><path d="M160 256H96a32 32 0 0 1 0-64h256V96a32 32 0 0 1 32-32h256a32 32 0 0 1 32 32v96h256a32 32 0 1 1 0 64h-64v672a32 32 0 0 1-32 32H192a32 32 0 0 1-32-32V256zm448-64v-64H416v64h192zM224 256v640h576V256H224zm192 128a32 32 0 0 1 32 32v320a32 32 0 0 1-64 0V416a32 32 0 0 1 32-32zm192 0a32 32 0 0 1 32 32v320a32 32 0 1 1-64 0V416a32 32 0 0 1 32-32z"></path></svg></button></span></td></tr>
+                    <tr><td>2024-12-24 14:08:49</td><td><span class="action-row"><button class="btn icon-only" data-toast="编辑" aria-label="编辑"><svg class="ep-icon" viewBox="0 0 1024 1024"><path d="M832 512a32 32 0 1 1 64 0v352a32 32 0 0 1-32 32H160a32 32 0 0 1-32-32V160a32 32 0 0 1 32-32h352a32 32 0 0 1 0 64H192v640h640V512z"></path><path d="m469.952 554.24 52.8-7.552L847.104 222.4a32 32 0 1 0-45.248-45.248L477.44 501.44l-7.488 52.8zm422.4-422.4a96 96 0 0 1 0 135.808l-331.84 331.84a32 32 0 0 1-18.112 9.088L436.8 623.68a32 32 0 0 1-36.224-36.224l15.104-105.6a32 32 0 0 1 9.024-18.112l331.904-331.84a96 96 0 0 1 135.744 0z"></path></svg></button><button class="btn icon-only danger" data-toast="删除" aria-label="删除"><svg class="ep-icon" viewBox="0 0 1024 1024"><path d="M160 256H96a32 32 0 0 1 0-64h256V96a32 32 0 0 1 32-32h256a32 32 0 0 1 32 32v96h256a32 32 0 1 1 0 64h-64v672a32 32 0 0 1-32 32H192a32 32 0 0 1-32-32V256zm448-64v-64H416v64h192zM224 256v640h576V256H224zm192 128a32 32 0 0 1 32 32v320a32 32 0 0 1-64 0V416a32 32 0 0 1 32-32zm192 0a32 32 0 0 1 32 32v320a32 32 0 1 1-64 0V416a32 32 0 0 1 32-32z"></path></svg></button></span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="demo-card">
+              <h3>复杂操作：文字按钮 + 更多</h3>
+              <div class="table-wrap">
+                <table style="min-width: 520px">
+                  <thead>
+                    <tr><th>角色</th><th>操作</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>角色A</td><td><span class="action-row"><button class="btn" data-toast="角色详情">角色详情</button><button class="btn warning" data-toast="解绑">解绑</button><span class="more"><button class="more-trigger" type="button">更多操作<svg class="ep-icon" viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 640 320 448l45.248-45.248L512 549.504l146.752-146.752L704 448z"></path></svg></button><span class="more-menu"><button data-toast="绑定账号">绑定账号</button><button data-toast="修改密码">修改密码</button><button data-toast="随机密码">随机密码</button></span></span></span></td></tr>
+                    <tr><td>角色B</td><td><span class="action-row"><button class="btn" data-toast="角色详情">角色详情</button><button class="btn warning" data-toast="解绑">解绑</button><span class="more"><button class="more-trigger" type="button">更多操作<svg class="ep-icon" viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 640 320 448l45.248-45.248L512 549.504l146.752-146.752L704 448z"></path></svg></button><span class="more-menu"><button data-toast="绑定账号">绑定账号</button><button data-toast="修改密码">修改密码</button><button data-toast="随机密码">随机密码</button></span></span></span></td></tr>
+                    <tr><td>角色C</td><td><span class="action-row"><button class="btn" data-toast="角色详情">角色详情</button><button class="btn warning" data-toast="解绑">解绑</button><span class="more"><button class="more-trigger" type="button">更多操作<svg class="ep-icon" viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 640 320 448l45.248-45.248L512 549.504l146.752-146.752L704 448z"></path></svg></button><span class="more-menu"><button data-toast="绑定账号">绑定账号</button><button data-toast="修改密码">修改密码</button><button data-toast="随机密码">随机密码</button></span></span></span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <p class="note">操作简单时用纯图标；操作复杂或风险更高时用文字按钮。操作项较多时收纳到“更多操作”。</p>
+        </div>
+
+        <div class="component-block">
+          <h2 class="block-title">批量编辑</h2>
+          <div class="demo-grid">
+            <div class="demo-card">
+              <h3>带选择列：选中后启用批量修改</h3>
+              <div class="batch-toolbar">
+                <button class="btn disabled" type="button" id="batchSelectBtn" disabled>
+                  + 批量修改
+                </button>
+                <span class="selected-count">已选 <strong id="batchSelectedCount">0</strong> 条</span>
+              </div>
+              <div class="table-wrap">
+                <table style="min-width: 620px">
+                  <colgroup>
+                    <col style="width: 44px" />
+                    <col style="width: 120px" />
+                    <col style="width: 130px" />
+                    <col style="width: 150px" />
+                    <col style="width: 100px" />
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th class="check-cell"><input class="table-check" type="checkbox" id="batchSelectAll" aria-label="全选" /></th>
+                      <th>游戏名称</th>
+                      <th>应用名称</th>
+                      <th>渠道</th>
+                      <th>端类型</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="check-cell"><input class="table-check" type="checkbox" data-batch-select aria-label="选择第1行" /></td>
+                      <td>[69]代号F</td>
+                      <td>[16]测试应用</td>
+                      <td><span class="ellipsis">[521100]代号F安卓渠道</span></td>
+                      <td>安卓</td>
+                    </tr>
+                    <tr>
+                      <td class="check-cell"><input class="table-check" type="checkbox" data-batch-select aria-label="选择第2行" /></td>
+                      <td>[69]代号F</td>
+                      <td>[16]测试应用</td>
+                      <td><span class="ellipsis">[520004]平台测试渠道</span></td>
+                      <td>H5链接</td>
+                    </tr>
+                    <tr>
+                      <td class="check-cell"><input class="table-check" type="checkbox" data-batch-select aria-label="选择第3行" /></td>
+                      <td>[69]代号F</td>
+                      <td>[16]测试应用</td>
+                      <td><span class="ellipsis">[521000]iOS测试渠道</span></td>
+                      <td>iOS</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="demo-card">
+              <h3>无选择列：直接进入批量修改窗口</h3>
+              <div class="batch-toolbar">
+                <button class="btn warning" type="button" id="openBatchModal">
+                  <svg class="ep-icon" viewBox="0 0 1024 1024" aria-hidden="true"></svg>
+                  批量随机密码
+                </button>
+              </div>
+              <div class="table-wrap">
+                <table style="min-width: 460px">
+                  <thead>
+                    <tr>
+                      <th>账号注册时间</th>
+                      <th>平台账号ID</th>
+                      <th>所属游戏</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>2026-05-09 14:30:40</td><td><span class="ellipsis">0aa625969...</span></td><td>青木</td></tr>
+                    <tr><td>2026-05-09 12:39:40</td><td><span class="ellipsis">7a255794c...</span></td><td>代号F</td></tr>
+                    <tr><td>2026-05-09 11:21:23</td><td>-</td><td>代号F</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <p class="note">批量编辑有两种入口：依赖表格选择列的批量操作，以及不依赖选择列、先打开批量修改窗口再选择项目的操作。</p>
+        </div>
+
+        <div class="component-block">
+          <h2 class="block-title">翻页组件</h2>
+          <div class="pagination-demo">
+            <span>共 14 条</span>
+            <select class="page-size" aria-label="每页条数">
+              <option>20条/页</option>
+              <option>50条/页</option>
+              <option>100条/页</option>
+            </select>
+            <button class="page-btn" type="button" data-toast="上一页" aria-label="上一页">‹</button>
+            <button class="page-num active" type="button" data-toast="第1页">1</button>
+            <button class="page-btn" type="button" data-toast="下一页" aria-label="下一页">›</button>
+          </div>
+          <p class="note">翻页组件在正常页面中放在表格左下角，属于列表底部控制区。</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-mask" id="confirmModal">
+    <div class="modal" role="dialog" aria-label="提示">
+      <div class="modal-head">
+        <span>提示</span>
+        <button class="modal-close" type="button" data-modal-cancel>×</button>
+      </div>
+      <div class="modal-body">
+        <span class="warn-icon">!</span>
+        <span id="confirmText">此操作将关闭闪验一键登录，是否继续？</span>
+      </div>
+      <div class="modal-foot">
+        <button type="button" data-modal-cancel>取消</button>
+        <button class="primary" type="button" id="confirmOk">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="batchEditModal">
+    <div class="modal" role="dialog" aria-label="批量修改">
+      <div class="modal-head">
+        <span>批量修改</span>
+        <button class="modal-close" type="button" data-batch-modal-cancel>×</button>
+      </div>
+      <div class="modal-body">
+        <div class="batch-form">
+          <div class="batch-form-row">
+            <label>所属项目</label>
+            <select class="batch-input">
+              <option>青木</option>
+              <option>代号F</option>
+              <option>平台</option>
+            </select>
+          </div>
+          <div class="batch-form-row">
+            <label>修改内容</label>
+            <input class="batch-input" value="随机密码" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" data-batch-modal-cancel>取消</button>
+        <button class="primary" type="button" id="batchEditOk">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    if (new URLSearchParams(location.search).get("embed") === "1") {
+      document.body.classList.add("embedded");
+    }
+
+    const confirmModal = document.getElementById("confirmModal");
+    const confirmText = document.getElementById("confirmText");
+    const confirmOk = document.getElementById("confirmOk");
+    const batchEditModal = document.getElementById("batchEditModal");
+    const batchEditOk = document.getElementById("batchEditOk");
+    const batchSelectBtn = document.getElementById("batchSelectBtn");
+    const batchSelectedCount = document.getElementById("batchSelectedCount");
+    const batchSelectAll = document.getElementById("batchSelectAll");
+    const toast = document.getElementById("toast");
+    let pendingSwitch = null;
+    let toastTimer = null;
+    const editPenIcon = '<path d="m199.04 672.64 193.984 112 224-387.968-193.92-112-224 387.968zm-23.872 60.16 32.896 148.288 144.896-45.696L175.168 732.8zm247.936-448.256 193.92 112 56.64-98.112-193.92-112-56.64 98.112zM104.32 708.8l384-665.024 304.768 175.936-384 665.024a32 32 0 0 1-17.408 14.464l-209.664 66.112c-18.944 5.952-38.976-5.632-43.264-25.024L91.584 727.68a32 32 0 0 1 12.736-18.88z"></path>';
+
+    document.querySelectorAll(".edit-text .ep-icon, .btn.icon-only:not(.danger) .ep-icon, #openBatchModal .ep-icon").forEach((icon) => {
+      icon.setAttribute("aria-hidden", "true");
+      icon.innerHTML = editPenIcon;
+    });
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 1400);
+    }
+
+    function closeModal() {
+      confirmModal.classList.remove("open");
+      pendingSwitch = null;
+    }
+
+    function openBatchEditModal() {
+      batchEditModal.classList.add("open");
+    }
+
+    function closeBatchEditModal() {
+      batchEditModal.classList.remove("open");
+    }
+
+    function updateBatchSelection() {
+      const checks = Array.from(document.querySelectorAll("[data-batch-select]"));
+      const checked = checks.filter((item) => item.checked);
+      batchSelectedCount.textContent = checked.length;
+      batchSelectBtn.disabled = checked.length === 0;
+      batchSelectBtn.classList.toggle("disabled", checked.length === 0);
+      checks.forEach((item) => {
+        item.closest("tr").classList.toggle("row-selected", item.checked);
+      });
+      batchSelectAll.checked = checked.length > 0 && checked.length === checks.length;
+      batchSelectAll.indeterminate = checked.length > 0 && checked.length < checks.length;
+    }
+
+    document.querySelectorAll("[data-batch-select]").forEach((checkbox) => {
+      checkbox.addEventListener("change", updateBatchSelection);
+    });
+
+    batchSelectAll.addEventListener("change", () => {
+      const checks = Array.from(document.querySelectorAll("[data-batch-select]"));
+      checks.forEach((item) => {
+        item.checked = batchSelectAll.checked;
+      });
+      updateBatchSelection();
+    });
+
+    batchSelectBtn.addEventListener("click", () => {
+      if (!batchSelectBtn.disabled) openBatchEditModal();
+    });
+
+    document.getElementById("openBatchModal").addEventListener("click", openBatchEditModal);
+
+    document.querySelectorAll("[data-batch-modal-cancel]").forEach((button) => {
+      button.addEventListener("click", closeBatchEditModal);
+    });
+
+    batchEditOk.addEventListener("click", () => {
+      closeBatchEditModal();
+      showToast("批量修改已提交");
+    });
+
+    batchEditModal.addEventListener("click", (event) => {
+      if (event.target === batchEditModal) closeBatchEditModal();
+    });
+
+    document.querySelectorAll("[data-switch]").forEach((button) => {
+      button.addEventListener("click", () => {
+        pendingSwitch = button;
+        confirmText.textContent = button.dataset.message;
+        confirmModal.classList.add("open");
+      });
+    });
+
+    confirmOk.addEventListener("click", () => {
+      if (pendingSwitch) {
+        pendingSwitch.classList.toggle("on");
+        pendingSwitch.querySelector("span").textContent = pendingSwitch.classList.contains("on") ? "开" : "关";
+      }
+      closeModal();
+    });
+
+    document.querySelectorAll("[data-modal-cancel]").forEach((button) => {
+      button.addEventListener("click", closeModal);
+    });
+
+    confirmModal.addEventListener("click", (event) => {
+      if (event.target === confirmModal) closeModal();
+    });
+
+    document.querySelectorAll("[data-toast]").forEach((button) => {
+      button.addEventListener("click", () => showToast(button.dataset.toast));
+    });
+
+    function closeMoreMenus(except) {
+      document.querySelectorAll(".more-menu.open").forEach((menu) => {
+        if (menu !== except) menu.classList.remove("open");
+      });
+    }
+
+    document.querySelectorAll(".more-trigger").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const menu = button.nextElementSibling;
+        const willOpen = !menu.classList.contains("open");
+        closeMoreMenus(menu);
+        menu.classList.toggle("open", willOpen);
+      });
+    });
+
+    document.querySelectorAll(".more-menu").forEach((menu) => {
+      menu.addEventListener("click", (event) => {
+        const item = event.target.closest("[data-toast]");
+        if (item) showToast(item.dataset.toast);
+        menu.classList.remove("open");
+      });
+    });
+
+    document.addEventListener("click", () => closeMoreMenus());
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeModal();
+        closeBatchEditModal();
+        closeMoreMenus();
+      }
+    });
+  </script>
+</body>
+</html>

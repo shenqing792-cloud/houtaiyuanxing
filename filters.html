@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>筛选项组件展示</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #fff;
+      --line: #d9e2ef;
+      --text: #1f2d3d;
+      --muted: #7a8699;
+      --primary: #1677ff;
+      --primary-weak: #eef5ff;
+      --placeholder: #b4bfcd;
+      --sidebar: #071f3f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      font-size: 13px;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 194px 1fr;
+      grid-template-rows: 52px 1fr;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 194px 1fr auto;
+      height: 52px;
+      background: #082c55;
+      color: #fff;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 18px;
+      font-size: 18px;
+      font-weight: 700;
+      background: #0a3768;
+    }
+
+    .brand-mark {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #ffbe45, #ff6f35);
+    }
+
+    .top-title {
+      display: flex;
+      align-items: center;
+      padding-left: 24px;
+      font-size: 14px;
+    }
+
+    .userbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-right: 18px;
+      font-size: 12px;
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #ff7a45;
+      display: grid;
+      place-items: center;
+      color: #fff;
+    }
+
+    .sidebar {
+      grid-row: 2;
+      background: var(--sidebar);
+      color: #d9e6f7;
+      padding-top: 18px;
+    }
+
+    .menu-item {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 20px;
+    }
+
+    .menu-item.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .content {
+      grid-row: 2;
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .breadcrumb {
+      height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #607086;
+      margin-bottom: 10px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border-radius: 8px;
+      border: 1px solid #edf2f8;
+      padding: 20px 20px 24px;
+      min-height: calc(100vh - 114px);
+    }
+
+    .component-block {
+      border-bottom: 1px solid #edf2f8;
+      padding: 0 0 24px;
+      margin-bottom: 24px;
+    }
+
+    .component-block:last-child {
+      border-bottom: 0;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .block-title {
+      margin: 0 0 16px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #223042;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(280px, 1fr));
+      gap: 18px 28px;
+      align-items: start;
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: 86px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      min-width: 0;
+    }
+
+    .label {
+      height: 32px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      color: #344052;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .field,
+    .textarea,
+    .select-control,
+    .multi-control {
+      width: 100%;
+      height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      color: #223042;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .field {
+      padding: 0 12px;
+    }
+
+    .field::placeholder,
+    .textarea::placeholder {
+      color: var(--placeholder);
+    }
+
+    .field:focus,
+    .textarea:focus,
+    .select-control.is-open,
+    .multi-control.is-open {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.10);
+    }
+
+    .textarea {
+      min-height: 52px;
+      padding: 7px 12px;
+      line-height: 1.35;
+      resize: vertical;
+      overflow: auto;
+    }
+
+    .textarea.no-resize {
+      height: 32px;
+      min-height: 32px;
+      resize: none;
+      overflow: hidden;
+      padding-top: 6px;
+      white-space: nowrap;
+    }
+
+    .select-control,
+    .multi-control {
+      position: relative;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      overflow: visible;
+    }
+
+    .select-trigger,
+    .multi-trigger {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: transparent;
+      padding: 0 28px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-align: left;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .placeholder {
+      color: var(--placeholder);
+    }
+
+    .select-arrow,
+    .select-clear,
+    .multi-arrow,
+    .multi-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9aa8bc;
+      font-size: 12px;
+      pointer-events: none;
+    }
+
+    .select-clear,
+    .multi-clear {
+      display: none;
+      color: #9aa8bc;
+      pointer-events: auto;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .select-control.optional.has-value:hover .select-arrow,
+    .multi-control.has-value:hover .multi-arrow {
+      display: none;
+    }
+
+    .select-control.optional.has-value:hover .select-clear,
+    .multi-control.has-value:hover .multi-clear {
+      display: block;
+    }
+
+    .select-menu,
+    .multi-menu {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 4px);
+      width: 100%;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      box-shadow: 0 10px 24px rgba(15, 34, 61, 0.12);
+      z-index: 20;
+      display: none;
+      overflow: hidden;
+    }
+
+    .select-menu.open,
+    .multi-menu.open {
+      display: block;
+    }
+
+    .select-option {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      padding: 8px 12px;
+      color: #223042;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .select-option:hover,
+    .select-option.active {
+      color: var(--primary);
+      background: #f5f8ff;
+    }
+
+    .multi-actions {
+      display: flex;
+      gap: 18px;
+      padding: 10px 14px;
+      border-bottom: 1px solid #edf2f8;
+    }
+
+    .multi-actions button {
+      border: 0;
+      background: transparent;
+      color: var(--primary);
+      padding: 0;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .multi-options {
+      max-height: 260px;
+      overflow: auto;
+      padding: 4px 0;
+    }
+
+    .multi-option {
+      width: 100%;
+      min-height: 36px;
+      border: 0;
+      background: #fff;
+      display: grid;
+      grid-template-columns: 1fr 20px;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px 8px 20px;
+      text-align: left;
+      color: #4c5868;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .multi-option:hover,
+    .multi-option.selected {
+      background: #f5f8ff;
+    }
+
+    .multi-option.selected {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .checkmark {
+      color: var(--primary);
+      visibility: hidden;
+      text-align: center;
+    }
+
+    .multi-option.selected .checkmark {
+      visibility: visible;
+    }
+
+    .selected-tag {
+      display: inline-flex;
+      align-items: center;
+      max-width: 170px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 3px;
+      background: #f1f3f6;
+      color: #607086;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .selected-more {
+      height: 22px;
+      line-height: 20px;
+      padding: 0 8px;
+      border: 1px solid #d9e2ef;
+      border-radius: 3px;
+      background: #f7f9fc;
+      color: #607086;
+      font-size: 12px;
+    }
+
+    .date-range-control,
+    .datetime-control,
+    .range-input-control {
+      position: relative;
+      width: 100%;
+      height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      color: #223042;
+      font-size: 13px;
+    }
+
+    .date-range-control {
+      gap: 12px;
+      padding: 0 12px;
+      cursor: pointer;
+    }
+
+    .date-range-control.is-open {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.10);
+    }
+
+    .date-icon,
+    .time-icon {
+      color: #9aa8bc;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .datetime-control.is-open {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.10);
+    }
+
+    .datetime-trigger {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .datetime-panel {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 6px);
+      width: 372px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      box-shadow: 0 10px 24px rgba(15, 34, 61, 0.14);
+      z-index: 30;
+      display: none;
+    }
+
+    .datetime-panel.open {
+      display: block;
+    }
+
+    .datetime-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 10px;
+      border-bottom: 1px solid #edf2f8;
+    }
+
+    .datetime-inputs input {
+      height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 0 12px;
+      font: inherit;
+      color: #344052;
+      outline: none;
+    }
+
+    .datetime-inputs input:focus {
+      border-color: var(--primary);
+    }
+
+    .datetime-body {
+      display: block;
+      min-height: 268px;
+    }
+
+    .calendar-panel {
+      padding: 10px 12px;
+    }
+
+    .calendar-head {
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #344052;
+      font-size: 16px;
+    }
+
+    .calendar-nav {
+      border: 0;
+      background: transparent;
+      color: #607086;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .calendar-week,
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+    }
+
+    .calendar-week {
+      height: 34px;
+      align-items: center;
+      border-bottom: 1px solid #edf2f8;
+      color: #344052;
+    }
+
+    .calendar-day {
+      height: 36px;
+      border: 0;
+      background: transparent;
+      color: #4c5868;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .calendar-day.muted {
+      color: #b8c1d0;
+    }
+
+    .calendar-day.selected span {
+      width: 24px;
+      height: 24px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .time-panel {
+      position: absolute;
+      right: 10px;
+      top: 52px;
+      width: 168px;
+      padding: 48px 10px 0;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      box-shadow: 0 8px 18px rgba(15, 34, 61, 0.12);
+      display: none;
+      z-index: 2;
+    }
+
+    .datetime-panel.show-time .time-panel {
+      display: block;
+    }
+
+    .time-columns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid #edf2f8;
+      max-height: 154px;
+      overflow: hidden;
+    }
+
+    .time-col {
+      max-height: 154px;
+      overflow: auto;
+      border-right: 1px solid #edf2f8;
+    }
+
+    .time-col:last-child {
+      border-right: 0;
+    }
+
+    .time-option {
+      width: 100%;
+      height: 28px;
+      border: 0;
+      background: #fff;
+      color: #4c5868;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .time-option:hover,
+    .time-option.active {
+      color: var(--primary);
+      background: #f5f8ff;
+      font-weight: 600;
+    }
+
+    .datetime-footer {
+      height: 42px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      border-top: 1px solid #edf2f8;
+    }
+
+    .link-btn,
+    .confirm-btn {
+      height: 28px;
+      border-radius: 4px;
+      padding: 0 12px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .link-btn {
+      border: 0;
+      background: transparent;
+      color: var(--primary);
+    }
+
+    .confirm-btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #344052;
+    }
+
+    .range-input-control {
+      padding: 0 10px;
+      gap: 10px;
+    }
+
+    .range-input-control input {
+      min-width: 0;
+      flex: 1;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      text-align: center;
+      color: #344052;
+      font: inherit;
+    }
+
+    .range-input-control input::placeholder {
+      color: var(--placeholder);
+    }
+
+    .range-dash {
+      color: #223042;
+      flex: none;
+    }
+
+    .range-picker-panel {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 6px);
+      width: 560px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      box-shadow: 0 10px 24px rgba(15, 34, 61, 0.14);
+      z-index: 30;
+      display: none;
+    }
+
+    .range-picker-panel.open {
+      display: block;
+    }
+
+    .range-picker-body {
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      min-height: 260px;
+    }
+
+    .range-presets {
+      padding: 10px 0;
+      border-right: 1px solid #edf2f8;
+    }
+
+    .range-presets button {
+      width: 100%;
+      height: 30px;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      padding: 0 14px;
+      color: #344052;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .range-presets button:hover {
+      color: var(--primary);
+      background: #f5f8ff;
+    }
+
+    .range-months {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-width: 448px;
+    }
+
+    .range-month {
+      padding: 10px 12px;
+    }
+
+    .range-month + .range-month {
+      border-left: 1px solid #edf2f8;
+    }
+
+    .range-title {
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #344052;
+    }
+
+    .range-week,
+    .range-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+    }
+
+    .range-week {
+      height: 30px;
+      align-items: center;
+      border-bottom: 1px solid #edf2f8;
+    }
+
+    .range-day {
+      height: 32px;
+      border: 0;
+      background: transparent;
+      color: #4c5868;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .range-day.muted {
+      color: #b8c1d0;
+    }
+
+    .range-day.in-range {
+      background: #eaf3ff;
+    }
+
+    .range-day.selected span {
+      width: 24px;
+      height: 24px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 1200px) {
+      .filter-grid { grid-template-columns: repeat(2, minmax(280px, 1fr)); }
+    }
+
+    @media (max-width: 860px) {
+      .app { grid-template-columns: 1fr; grid-template-rows: 52px 1fr; }
+      .topbar { grid-template-columns: 1fr auto; }
+      .brand { display: none; }
+      .sidebar { display: none; }
+      .content { grid-column: 1; }
+      .filter-grid { grid-template-columns: 1fr; }
+    }
+
+    body.embedded {
+      background: #fff;
+    }
+
+    body.embedded .app {
+      display: block;
+      min-height: auto;
+    }
+
+    body.embedded .topbar,
+    body.embedded .sidebar,
+    body.embedded .breadcrumb {
+      display: none;
+    }
+
+    body.embedded .content {
+      padding: 0;
+      overflow: visible;
+    }
+
+    body.embedded .panel {
+      min-height: auto;
+      border: 0;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <span>发行运营后台</span>
+      </div>
+      <div class="top-title">筛选项组件展示</div>
+      <div class="userbox">
+        <div class="avatar">申</div>
+        <span>申庆</span>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <div class="menu-item">运营管理</div>
+      <div class="menu-item">转端管理</div>
+      <div class="menu-item active">组件沉淀</div>
+      <div class="menu-item">系统设置</div>
+    </aside>
+
+    <main class="content">
+      <div class="breadcrumb">首页 / 原型组件 / 筛选项组件</div>
+      <section class="panel">
+        <div class="component-block">
+          <h2 class="block-title">单选下拉框</h2>
+          <div class="filter-grid">
+            <div class="filter-row">
+              <div class="label">所属项目</div>
+              <div class="select-control required has-value" data-default="青木">
+                <button type="button" class="select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                  <span class="select-text">青木</span>
+                </button>
+                <span class="select-arrow">▼</span>
+                <span class="select-clear">×</span>
+                <div class="select-menu" role="listbox">
+                  <button type="button" class="select-option active" data-value="青木">青木</button>
+                  <button type="button" class="select-option" data-value="平台">平台</button>
+                  <button type="button" class="select-option" data-value="悟道">悟道</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="filter-row">
+              <div class="label">操作对象</div>
+              <div class="select-control optional" data-placeholder="请选择操作对象">
+                <button type="button" class="select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                  <span class="select-text placeholder">请选择操作对象</span>
+                </button>
+                <span class="select-arrow">▼</span>
+                <span class="select-clear">×</span>
+                <div class="select-menu" role="listbox">
+                  <button type="button" class="select-option" data-value="平台账号ID">平台账号ID</button>
+                  <button type="button" class="select-option" data-value="IP">IP</button>
+                  <button type="button" class="select-option" data-value="设备号">设备号</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="component-block">
+          <h2 class="block-title">输入框</h2>
+          <div class="filter-grid">
+            <div class="filter-row">
+              <div class="label">AppId</div>
+              <textarea class="textarea no-resize" placeholder="请选择AppId"></textarea>
+            </div>
+
+            <div class="filter-row">
+              <div class="label">平台账号ID</div>
+              <textarea class="textarea" placeholder="请输入平台账号ID，批量输入换行分隔，最多100个"></textarea>
+            </div>
+          </div>
+          <div class="note">不可拉动输入框用于短文本；可拉动输入框用于批量输入，右下角可扩展高度。</div>
+        </div>
+
+        <div class="component-block">
+          <h2 class="block-title">多选下拉框</h2>
+          <div class="filter-grid">
+            <div class="filter-row">
+              <div class="label">渠道筛选</div>
+              <div class="multi-control" id="channelMulti" data-placeholder="请选择渠道">
+                <button type="button" class="multi-trigger" aria-haspopup="listbox" aria-expanded="false">
+                  <span class="multi-placeholder placeholder">请选择渠道</span>
+                </button>
+                <span class="multi-arrow">⌃</span>
+                <span class="multi-clear">×</span>
+                <div class="multi-menu" role="listbox">
+                  <div class="multi-actions">
+                    <button type="button" data-action="all">全选</button>
+                    <button type="button" data-action="none">全不选</button>
+                    <button type="button" data-action="invert">反选</button>
+                  </div>
+                  <div class="multi-options">
+                    <button type="button" class="multi-option" data-value="520001-法务测试">
+                      <span>520001-法务测试</span><span class="checkmark">✓</span>
+                    </button>
+                    <button type="button" class="multi-option" data-value="520004-平台测试">
+                      <span>520004-平台测试</span><span class="checkmark">✓</span>
+                    </button>
+                    <button type="button" class="multi-option" data-value="520000-幻灵代号F-H5测试链接SDK">
+                      <span>520000-幻灵代号F-H5测试链接SDK</span><span class="checkmark">✓</span>
+                    </button>
+                    <button type="button" class="multi-option" data-value="520002-代号F 微信小游戏测试">
+                      <span>520002-代号F 微信小游戏测试</span><span class="checkmark">✓</span>
+                    </button>
+                    <button type="button" class="multi-option" data-value="520003-非SDK测试">
+                      <span>520003-非SDK测试</span><span class="checkmark">✓</span>
+                    </button>
+                    <button type="button" class="multi-option" data-value="520088-内部众测">
+                      <span>520088-内部众测</span><span class="checkmark">✓</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="note">多选下拉为非必填。选择后只展示第一个选中值，后续选中项以“+数字”展示。</div>
+        </div>
+
+        <div class="component-block">
+          <h2 class="block-title">时间组件</h2>
+          <div class="filter-grid">
+            <div class="filter-row">
+              <div class="label">操作时间</div>
+              <div class="date-range-control" id="dateRangeControl" tabindex="0" role="button" aria-expanded="false">
+                <span class="date-icon">◷</span>
+                <span id="rangeStartText">2026-04-25</span>
+                <span>-</span>
+                <span id="rangeEndText">2026-04-30</span>
+                <div class="range-picker-panel" id="rangePanel" role="dialog" aria-label="日期范围选择">
+                  <div class="range-picker-body">
+                    <div class="range-presets">
+                      <button type="button" data-range-preset="today">今日</button>
+                      <button type="button" data-range-preset="yesterday">昨日</button>
+                      <button type="button" data-range-preset="last7">最近7天</button>
+                      <button type="button" data-range-preset="month">本月</button>
+                    </div>
+                    <div class="range-months">
+                      <div class="range-month">
+                        <div class="range-title" id="rangeLeftTitle">2026 年 4 月</div>
+                        <div class="range-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+                        <div class="range-days" id="rangeLeftDays"></div>
+                      </div>
+                      <div class="range-month">
+                        <div class="range-title" id="rangeRightTitle">2026 年 5 月</div>
+                        <div class="range-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+                        <div class="range-days" id="rangeRightDays"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="filter-row">
+              <div class="label">创建日期范围</div>
+              <div class="datetime-control" id="singleDateTime">
+                <button type="button" class="datetime-trigger" aria-haspopup="dialog" aria-expanded="false">
+                  <span class="time-icon">◷</span>
+                  <span id="dateTimeText">2026-05-12 00:00:00</span>
+                </button>
+                <div class="datetime-panel" id="dateTimePanel" role="dialog" aria-label="单时间选择">
+                  <div class="datetime-inputs">
+                    <input id="dateInput" value="2026-05-12" readonly />
+                    <input id="timeInput" value="00:00:00" readonly />
+                  </div>
+                  <div class="datetime-body">
+                    <div class="calendar-panel">
+                      <div class="calendar-head">
+                        <button class="calendar-nav" type="button" id="prevMonth">‹</button>
+                        <span id="dateTimeMonth">2026 年 5 月</span>
+                        <button class="calendar-nav" type="button" id="nextMonth">›</button>
+                      </div>
+                      <div class="calendar-week">
+                        <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+                      </div>
+                      <div class="calendar-grid" id="dateTimeDays"></div>
+                    </div>
+                    <div class="time-panel">
+                      <div class="time-columns" id="timeColumns"></div>
+                    </div>
+                  </div>
+                  <div class="datetime-footer">
+                    <button type="button" class="link-btn" id="dateTimeNow">此刻</button>
+                    <button type="button" class="confirm-btn" id="dateTimeConfirm">确定</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="note">日期范围组件只选择日期；单时间组件选择一个具体时间点，包含日期、时、分、秒。</div>
+        </div>
+
+        <div class="component-block">
+          <h2 class="block-title">范围输入组件</h2>
+          <div class="filter-grid">
+            <div class="filter-row">
+              <div class="label">角色总充值</div>
+              <div class="range-input-control">
+                <input type="text" placeholder="最小角色总充值" />
+                <span class="range-dash">-</span>
+                <input type="text" placeholder="最大角色总充值" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    if (new URLSearchParams(location.search).get("embed") === "1") {
+      document.body.classList.add("embedded");
+    }
+
+    const selectControls = Array.from(document.querySelectorAll(".select-control"));
+
+    function closeAllSelects(except) {
+      selectControls.forEach((control) => {
+        if (control === except) return;
+        control.classList.remove("is-open");
+        control.querySelector(".select-menu").classList.remove("open");
+        control.querySelector(".select-trigger").setAttribute("aria-expanded", "false");
+      });
+    }
+
+    selectControls.forEach((control) => {
+      const trigger = control.querySelector(".select-trigger");
+      const menu = control.querySelector(".select-menu");
+      const text = control.querySelector(".select-text");
+      const clear = control.querySelector(".select-clear");
+      const required = control.classList.contains("required");
+      const placeholder = control.dataset.placeholder || "请选择";
+
+      trigger.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const open = !menu.classList.contains("open");
+        closeAllSelects(control);
+        closeMulti();
+        menu.classList.toggle("open", open);
+        control.classList.toggle("is-open", open);
+        trigger.setAttribute("aria-expanded", String(open));
+      });
+
+      menu.addEventListener("click", (event) => {
+        const option = event.target.closest(".select-option");
+        if (!option) return;
+        control.querySelectorAll(".select-option").forEach((item) => item.classList.remove("active"));
+        option.classList.add("active");
+        text.textContent = option.dataset.value;
+        text.classList.remove("placeholder");
+        control.classList.add("has-value");
+        menu.classList.remove("open");
+        control.classList.remove("is-open");
+        trigger.setAttribute("aria-expanded", "false");
+      });
+
+      if (!required) {
+        clear.addEventListener("click", (event) => {
+          event.stopPropagation();
+          text.textContent = placeholder;
+          text.classList.add("placeholder");
+          control.classList.remove("has-value");
+          control.querySelectorAll(".select-option").forEach((item) => item.classList.remove("active"));
+        });
+      }
+    });
+
+    const multi = document.getElementById("channelMulti");
+    const multiTrigger = multi.querySelector(".multi-trigger");
+    const multiMenu = multi.querySelector(".multi-menu");
+    const multiClear = multi.querySelector(".multi-clear");
+    const multiOptions = Array.from(multi.querySelectorAll(".multi-option"));
+    const selectedValues = new Set();
+
+    const dateTime = document.getElementById("singleDateTime");
+    const dateTimeTrigger = dateTime.querySelector(".datetime-trigger");
+    const dateTimePanel = document.getElementById("dateTimePanel");
+    const dateTimeText = document.getElementById("dateTimeText");
+    const dateInput = document.getElementById("dateInput");
+    const timeInput = document.getElementById("timeInput");
+    const dateTimeMonth = document.getElementById("dateTimeMonth");
+    const dateTimeDays = document.getElementById("dateTimeDays");
+    const timeColumns = document.getElementById("timeColumns");
+    const prevMonth = document.getElementById("prevMonth");
+    const nextMonth = document.getElementById("nextMonth");
+    const dateTimeNow = document.getElementById("dateTimeNow");
+    const dateTimeConfirm = document.getElementById("dateTimeConfirm");
+    const dateTimeState = {
+      selected: new Date(2026, 4, 12, 0, 0, 0),
+      currentMonth: new Date(2026, 4, 1)
+    };
+    const dateRangeControl = document.getElementById("dateRangeControl");
+    const rangePanel = document.getElementById("rangePanel");
+    const rangeStartText = document.getElementById("rangeStartText");
+    const rangeEndText = document.getElementById("rangeEndText");
+    const rangeLeftTitle = document.getElementById("rangeLeftTitle");
+    const rangeRightTitle = document.getElementById("rangeRightTitle");
+    const rangeLeftDays = document.getElementById("rangeLeftDays");
+    const rangeRightDays = document.getElementById("rangeRightDays");
+    const rangeState = {
+      start: new Date(2026, 3, 25),
+      end: new Date(2026, 3, 30),
+      leftMonth: new Date(2026, 3, 1),
+      waitingEnd: false
+    };
+
+    function closeMulti() {
+      multi.classList.remove("is-open");
+      multiMenu.classList.remove("open");
+      multiTrigger.setAttribute("aria-expanded", "false");
+    }
+
+    function pad(n) {
+      return String(n).padStart(2, "0");
+    }
+
+    function formatDate(date) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+
+    function formatTime(date) {
+      return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    }
+
+    function syncDateTimeText() {
+      dateInput.value = formatDate(dateTimeState.selected);
+      timeInput.value = formatTime(dateTimeState.selected);
+      dateTimeText.textContent = `${dateInput.value} ${timeInput.value}`;
+    }
+
+    function closeDateTime() {
+      dateTime.classList.remove("is-open");
+      dateTimePanel.classList.remove("open");
+      dateTimePanel.classList.remove("show-time");
+      dateTimeTrigger.setAttribute("aria-expanded", "false");
+    }
+
+    function closeRangePanel() {
+      dateRangeControl.classList.remove("is-open");
+      rangePanel.classList.remove("open");
+      dateRangeControl.setAttribute("aria-expanded", "false");
+    }
+
+    function daysInMonth(year, month) {
+      return new Date(year, month + 1, 0).getDate();
+    }
+
+    function renderDateTimeCalendar() {
+      const year = dateTimeState.currentMonth.getFullYear();
+      const month = dateTimeState.currentMonth.getMonth();
+      dateTimeMonth.textContent = `${year} 年 ${month + 1} 月`;
+      const firstDay = new Date(year, month, 1).getDay();
+      const currentDays = daysInMonth(year, month);
+      const previousDays = daysInMonth(year, month - 1);
+      const cells = [];
+
+      for (let i = firstDay - 1; i >= 0; i -= 1) {
+        cells.push({ day: previousDays - i, muted: true, date: new Date(year, month - 1, previousDays - i) });
+      }
+      for (let day = 1; day <= currentDays; day += 1) {
+        cells.push({ day, muted: false, date: new Date(year, month, day) });
+      }
+      while (cells.length < 42) {
+        const day = cells.length - firstDay - currentDays + 1;
+        cells.push({ day, muted: true, date: new Date(year, month + 1, day) });
+      }
+
+      dateTimeDays.innerHTML = cells.map((cell) => {
+        const selected = formatDate(cell.date) === formatDate(dateTimeState.selected);
+        return `
+          <button type="button" class="calendar-day ${cell.muted ? "muted" : ""} ${selected ? "selected" : ""}" data-date="${formatDate(cell.date)}">
+            <span>${cell.day}</span>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function renderTimeColumns() {
+      const groups = [
+        { key: "hour", max: 23, value: dateTimeState.selected.getHours() },
+        { key: "minute", max: 59, value: dateTimeState.selected.getMinutes() },
+        { key: "second", max: 59, value: dateTimeState.selected.getSeconds() }
+      ];
+
+      timeColumns.innerHTML = groups.map((group) => `
+        <div class="time-col" data-unit="${group.key}">
+          ${Array.from({ length: group.max + 1 }, (_, value) => (
+            `<button type="button" class="time-option ${value === group.value ? "active" : ""}" data-value="${value}">${pad(value)}</button>`
+          )).join("")}
+        </div>
+      `).join("");
+    }
+
+    function renderDateTimePicker() {
+      syncDateTimeText();
+      renderDateTimeCalendar();
+      renderTimeColumns();
+    }
+
+    function renderRangeMonth(container, title, monthDate) {
+      const year = monthDate.getFullYear();
+      const month = monthDate.getMonth();
+      title.textContent = `${year} 年 ${month + 1} 月`;
+      const firstDay = new Date(year, month, 1).getDay();
+      const currentDays = daysInMonth(year, month);
+      const previousDays = daysInMonth(year, month - 1);
+      const cells = [];
+
+      for (let i = firstDay - 1; i >= 0; i -= 1) {
+        cells.push({ day: previousDays - i, muted: true, date: new Date(year, month - 1, previousDays - i) });
+      }
+      for (let day = 1; day <= currentDays; day += 1) {
+        cells.push({ day, muted: false, date: new Date(year, month, day) });
+      }
+      while (cells.length < 42) {
+        const day = cells.length - firstDay - currentDays + 1;
+        cells.push({ day, muted: true, date: new Date(year, month + 1, day) });
+      }
+
+      container.innerHTML = cells.map((cell) => {
+        const time = cell.date.getTime();
+        const startTime = new Date(rangeState.start.getFullYear(), rangeState.start.getMonth(), rangeState.start.getDate()).getTime();
+        const endTime = new Date(rangeState.end.getFullYear(), rangeState.end.getMonth(), rangeState.end.getDate()).getTime();
+        const selected = time === startTime || time === endTime;
+        const inRange = time > startTime && time < endTime;
+        return `
+          <button type="button" class="range-day ${cell.muted ? "muted" : ""} ${selected ? "selected" : ""} ${inRange ? "in-range" : ""}" data-date="${formatDate(cell.date)}">
+            <span>${cell.day}</span>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function renderRangePicker() {
+      rangeStartText.textContent = formatDate(rangeState.start);
+      rangeEndText.textContent = formatDate(rangeState.end);
+      renderRangeMonth(rangeLeftDays, rangeLeftTitle, rangeState.leftMonth);
+      renderRangeMonth(rangeRightDays, rangeRightTitle, new Date(rangeState.leftMonth.getFullYear(), rangeState.leftMonth.getMonth() + 1, 1));
+    }
+
+    function renderMultiValue() {
+      const values = Array.from(selectedValues);
+      multi.classList.toggle("has-value", values.length > 0);
+      multiOptions.forEach((option) => {
+        option.classList.toggle("selected", selectedValues.has(option.dataset.value));
+      });
+
+      if (!values.length) {
+        multiTrigger.innerHTML = '<span class="multi-placeholder placeholder">请选择渠道</span>';
+        return;
+      }
+
+      const first = values[0];
+      const more = values.length - 1;
+      multiTrigger.innerHTML = `
+        <span class="selected-tag" title="${first}">${first}</span>
+        ${more > 0 ? `<span class="selected-more">+${more}</span>` : ""}
+      `;
+    }
+
+    multiTrigger.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const open = !multiMenu.classList.contains("open");
+      closeAllSelects();
+      closeDateTime();
+      closeRangePanel();
+      multi.classList.toggle("is-open", open);
+      multiMenu.classList.toggle("open", open);
+      multiTrigger.setAttribute("aria-expanded", String(open));
+    });
+
+    multiMenu.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const action = event.target.closest("[data-action]");
+      if (action) {
+        const type = action.dataset.action;
+        if (type === "all") {
+          multiOptions.forEach((option) => selectedValues.add(option.dataset.value));
+        } else if (type === "none") {
+          selectedValues.clear();
+        } else {
+          multiOptions.forEach((option) => {
+            const value = option.dataset.value;
+            if (selectedValues.has(value)) selectedValues.delete(value);
+            else selectedValues.add(value);
+          });
+        }
+        renderMultiValue();
+        return;
+      }
+
+      const option = event.target.closest(".multi-option");
+      if (!option) return;
+      const value = option.dataset.value;
+      if (selectedValues.has(value)) selectedValues.delete(value);
+      else selectedValues.add(value);
+      renderMultiValue();
+    });
+
+    multiClear.addEventListener("click", (event) => {
+      event.stopPropagation();
+      selectedValues.clear();
+      renderMultiValue();
+      closeMulti();
+    });
+
+    dateTimeTrigger.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const open = !dateTimePanel.classList.contains("open");
+      closeAllSelects();
+      closeMulti();
+      closeRangePanel();
+      dateTime.classList.toggle("is-open", open);
+      dateTimePanel.classList.toggle("open", open);
+      dateTimePanel.classList.remove("show-time");
+      dateTimeTrigger.setAttribute("aria-expanded", String(open));
+    });
+
+    dateTimePanel.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
+
+    dateInput.addEventListener("click", () => {
+      dateTimePanel.classList.remove("show-time");
+    });
+
+    timeInput.addEventListener("click", () => {
+      dateTimePanel.classList.add("show-time");
+    });
+
+    dateTimePanel.addEventListener("click", (event) => {
+      if (event.target.closest(".time-panel") || event.target === timeInput) return;
+      dateTimePanel.classList.remove("show-time");
+    });
+
+    dateTimeDays.addEventListener("click", (event) => {
+      const dayButton = event.target.closest(".calendar-day");
+      if (!dayButton) return;
+      const [year, month, day] = dayButton.dataset.date.split("-").map(Number);
+      dateTimeState.selected.setFullYear(year, month - 1, day);
+      dateTimeState.currentMonth = new Date(year, month - 1, 1);
+      dateTimePanel.classList.remove("show-time");
+      renderDateTimePicker();
+    });
+
+    timeColumns.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const option = event.target.closest(".time-option");
+      if (!option) return;
+      const unit = option.closest(".time-col").dataset.unit;
+      const value = Number(option.dataset.value);
+      if (unit === "hour") dateTimeState.selected.setHours(value);
+      if (unit === "minute") dateTimeState.selected.setMinutes(value);
+      if (unit === "second") dateTimeState.selected.setSeconds(value);
+      renderDateTimePicker();
+    });
+
+    dateRangeControl.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const open = !rangePanel.classList.contains("open");
+      closeAllSelects();
+      closeMulti();
+      closeDateTime();
+      dateRangeControl.classList.toggle("is-open", open);
+      rangePanel.classList.toggle("open", open);
+      dateRangeControl.setAttribute("aria-expanded", String(open));
+    });
+
+    rangePanel.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const preset = event.target.closest("[data-range-preset]");
+      if (preset) {
+        const today = new Date(2026, 4, 9);
+        if (preset.dataset.rangePreset === "today") {
+          rangeState.start = new Date(today);
+          rangeState.end = new Date(today);
+        } else if (preset.dataset.rangePreset === "yesterday") {
+          rangeState.start = new Date(2026, 4, 8);
+          rangeState.end = new Date(2026, 4, 8);
+        } else if (preset.dataset.rangePreset === "last7") {
+          rangeState.start = new Date(2026, 4, 3);
+          rangeState.end = new Date(today);
+        } else {
+          rangeState.start = new Date(2026, 4, 1);
+          rangeState.end = new Date(2026, 4, 31);
+        }
+        rangeState.leftMonth = new Date(rangeState.start.getFullYear(), rangeState.start.getMonth(), 1);
+        rangeState.waitingEnd = false;
+        renderRangePicker();
+        return;
+      }
+
+      const dayButton = event.target.closest(".range-day");
+      if (!dayButton) return;
+      const [year, month, day] = dayButton.dataset.date.split("-").map(Number);
+      const picked = new Date(year, month - 1, day);
+      if (!rangeState.waitingEnd) {
+        rangeState.start = picked;
+        rangeState.end = picked;
+        rangeState.waitingEnd = true;
+      } else {
+        if (picked < rangeState.start) {
+          rangeState.end = rangeState.start;
+          rangeState.start = picked;
+        } else {
+          rangeState.end = picked;
+        }
+        rangeState.waitingEnd = false;
+      }
+      rangeState.leftMonth = new Date(rangeState.start.getFullYear(), rangeState.start.getMonth(), 1);
+      renderRangePicker();
+    });
+
+    prevMonth.addEventListener("click", () => {
+      dateTimeState.currentMonth.setMonth(dateTimeState.currentMonth.getMonth() - 1);
+      renderDateTimeCalendar();
+    });
+
+    nextMonth.addEventListener("click", () => {
+      dateTimeState.currentMonth.setMonth(dateTimeState.currentMonth.getMonth() + 1);
+      renderDateTimeCalendar();
+    });
+
+    dateTimeNow.addEventListener("click", () => {
+      dateTimeState.selected = new Date();
+      dateTimeState.currentMonth = new Date(dateTimeState.selected.getFullYear(), dateTimeState.selected.getMonth(), 1);
+      renderDateTimePicker();
+    });
+
+    dateTimeConfirm.addEventListener("click", () => {
+      closeDateTime();
+    });
+
+    document.addEventListener("click", () => {
+      closeAllSelects();
+      closeMulti();
+      closeDateTime();
+      closeRangePanel();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeAllSelects();
+        closeMulti();
+        closeDateTime();
+        closeRangePanel();
+      }
+    });
+
+    renderMultiValue();
+    renderDateTimePicker();
+    renderRangePicker();
+  </script>
+</body>
+</html>
