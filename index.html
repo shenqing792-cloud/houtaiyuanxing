@@ -160,21 +160,41 @@
     }
 
     .menu-item {
+      width: 100%;
+      border: 0;
+      background: transparent;
       height: 50px;
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 0 18px;
+      font: inherit;
       font-size: 13px;
       line-height: 1.2;
       cursor: default;
       color: rgba(255,255,255,.80);
+      text-align: left;
     }
 
     .menu-item.active {
       background: #2f93ff;
       color: #fff;
       box-shadow: inset 3px 0 0 #ffffff;
+    }
+
+    .menu-item.parent {
+      font-weight: 600;
+      cursor: default;
+    }
+
+    .menu-item.child {
+      padding-left: 38px;
+      cursor: pointer;
+    }
+
+    .menu-item.child:hover {
+      background: rgba(47, 147, 255, 0.18);
+      color: #fff;
     }
 
     .menu-item .ico {
@@ -255,6 +275,12 @@
 
     .breadcrumb .sep { color: #d0d7e2; }
 
+    .current-page-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #344052;
+    }
+
     .tabs-wrap {
       background: rgba(255,255,255,.82);
       border-bottom: 1px solid var(--line-soft);
@@ -278,10 +304,13 @@
       gap: 8px;
       height: 32px;
       padding: 0 14px;
+      border: 0;
       border-right: 1px solid #dfe6f0;
       color: #334155;
       background: transparent;
+      font: inherit;
       font-size: 12px;
+      cursor: pointer;
     }
 
     .tab.active {
@@ -1162,21 +1191,8 @@
 
     <aside class="sidebar">
       <div class="menu-group">
-        <div class="menu-item"><span class="ico">▮▮▮</span><span class="txt">运营管理</span><span class="chev">▾</span></div>
-        <div class="menu-item"><span class="ico">⌂</span><span class="txt">转端管理</span><span class="chev">▾</span></div>
-        <div class="menu-item"><span class="ico">▣</span><span class="txt">直播管理</span><span class="chev">▾</span></div>
-        <div class="menu-item"><span class="ico">◫</span><span class="txt">关键数据</span><span class="chev">▾</span></div>
-        <div class="menu-item"><span class="ico">◎</span><span class="txt">内容安全策略中心</span><span class="chev">▾</span></div>
-        <div class="menu-item"><span class="ico">☺</span><span class="txt">VIP客服</span><span class="chev">▾</span></div>
-        <div class="menu-item"><span class="ico">◔</span><span class="txt">用户分析</span><span class="chev">▾</span></div>
-        <div class="menu-item"><span class="ico">◉</span><span class="txt">付费分析</span><span class="chev">▾</span></div>
-        <div class="menu-item"><span class="ico">✚</span><span class="txt">风控管理</span><span class="chev">▴</span></div>
-        <div class="menu-item"><span class="ico">↳</span><span class="txt">黑卡充值风控</span><span class="chev">▾</span></div>
-        <div class="menu-item active"><span class="ico">▣</span><span class="txt">平台封禁</span><span class="chev">▾</span></div>
-        <div class="menu-item"><span class="ico">◫</span><span class="txt">GS管理</span><span class="chev">▾</span></div>
-        <div class="menu-item"><span class="ico">◔</span><span class="txt">区服分析</span><span class="chev">▾</span></div>
-        <div class="menu-item"><span class="ico">◯</span><span class="txt">财务后台</span><span class="chev">▾</span></div>
-        <div class="menu-item"><span class="ico">⚙</span><span class="txt">系统设置</span><span class="chev">▾</span></div>
+        <div class="menu-item parent" aria-current="true"><span class="ico">✚</span><span class="txt">风控管理</span><span class="chev">▴</span></div>
+        <button class="menu-item child active" type="button" data-page-tab="platform-ban"><span class="ico">▣</span><span class="txt">平台封禁</span><span class="chev">▾</span></button>
       </div>
       <div class="version">版本号：v4.9.2-270-gd631a83b</div>
     </aside>
@@ -1186,13 +1202,7 @@
         <div class="header-row">
           <div class="header-left">
             <button class="icon-btn" aria-label="折叠菜单">☰</button>
-            <div class="breadcrumb">
-              <span>首页</span>
-              <span class="sep">/</span>
-              <span>风控管理</span>
-              <span class="sep">/</span>
-              <span>平台封禁</span>
-            </div>
+            <div class="current-page-title">平台封禁</div>
             <button class="icon-btn" aria-label="刷新">⟳</button>
           </div>
           <div class="header-right">
@@ -1201,20 +1211,8 @@
         </div>
 
         <div class="tabs-wrap">
-          <div class="tabs">
-            <div class="tab">首页</div>
-            <div class="tab">小游戏配置管理 <span class="close">×</span></div>
-            <div class="tab">游戏角色 <span class="close">×</span></div>
-            <div class="tab">游戏管理 <span class="close">×</span></div>
-            <div class="tab">埋点明细日志 <span class="close">×</span></div>
-            <div class="tab">全渠道用户 <span class="close">×</span></div>
-            <div class="tab">应用渠道配置 <span class="close">×</span></div>
-            <div class="tab">协议生成管理 <span class="close">×</span></div>
-            <div class="tab">游戏封禁管理 <span class="close">×</span></div>
-            <div class="tab active">平台封禁 <span class="close">×</span></div>
-            <div class="tab">渠道管理 <span class="close">×</span></div>
-            <div class="tab">渠道母包管理 <span class="close">×</span></div>
-            <div class="tab">内部账号 <span class="close">×</span></div>
+          <div class="tabs" aria-label="页面记录">
+            <button class="tab active" type="button" data-page-tab="platform-ban">平台封禁</button>
           </div>
         </div>
 
@@ -1979,6 +1977,13 @@
         closeAllSelects();
         closeDatePanel();
       }
+    });
+
+    document.querySelectorAll("[data-page-tab='platform-ban']").forEach((item) => {
+      item.addEventListener("click", () => {
+        document.querySelector(".page-shell").scrollTo({ top: 0, behavior: "smooth" });
+        document.querySelectorAll("[data-page-tab='platform-ban']").forEach((tab) => tab.classList.add("active"));
+      });
     });
 
     updateDateDisplay();
